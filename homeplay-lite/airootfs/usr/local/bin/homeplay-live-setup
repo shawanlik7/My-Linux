@@ -13,8 +13,9 @@ if command -v locale-gen >/dev/null 2>&1 && ! locale -a 2>/dev/null | grep -qi '
 fi
 
 groupadd -f autologin
+groupadd -f nopasswdlogin
 
-for group in wheel audio video optical storage power network lp scanner autologin; do
+for group in wheel audio video optical storage power network lp scanner autologin nopasswdlogin; do
   getent group "$group" >/dev/null 2>&1 || groupadd "$group"
 done
 
@@ -23,7 +24,7 @@ if ! id -u homeplay >/dev/null 2>&1; then
   useradd -m -U -c "HomePlay User" -s /bin/bash homeplay
 fi
 
-usermod -aG wheel,audio,video,optical,storage,power,network,lp,scanner,autologin homeplay || true
+usermod -aG wheel,audio,video,optical,storage,power,network,lp,scanner,autologin,nopasswdlogin homeplay || true
 passwd -d homeplay >/dev/null 2>&1 || true
 
 if [ -d /etc/skel ] && [ -d /home/homeplay ]; then
@@ -33,9 +34,11 @@ fi
 
 if command -v ufw >/dev/null 2>&1; then
   log "Enabling simple firewall defaults"
-  ufw --force default deny incoming >/dev/null 2>&1 || true
-  ufw --force default allow outgoing >/dev/null 2>&1 || true
-  ufw --force enable >/dev/null 2>&1 || true
+  timeout 20s bash -c '
+    ufw --force default deny incoming &&
+    ufw --force default allow outgoing &&
+    ufw --force enable
+  ' >/dev/null 2>&1 || true
 fi
 
 touch /var/lib/homeplay/live-setup.done
