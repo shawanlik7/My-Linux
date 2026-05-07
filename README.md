@@ -64,6 +64,10 @@ sudo mkarchiso -v -w work -o out homeplay-lite
 
 `mkarchiso` принимает путь к папке профиля `homeplay-lite`, а не путь к `profiledef.sh`.
 
+Профиль использует явные официальные Arch-зеркала в `homeplay-lite/pacman.conf`. Это нужно, чтобы сборка не зависела от mirrorlist текущей Arch-based системы.
+
+Скрипт `./scripts/build-iso.sh` дополнительно создает изолированный cache пакетов в `.cache/pacman/pkg`. Это важно на Manjaro/других Arch-based системах: нельзя смешивать пакеты хоста и чистого Arch ISO в общем `/var/cache/pacman/pkg`.
+
 ## Тестирование в QEMU
 
 Установи QEMU:
