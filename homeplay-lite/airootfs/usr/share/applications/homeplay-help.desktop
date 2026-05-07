@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=HomePlay Help
+Name[ru]=Помощь
+Comment=Open HomePlay Lite OS help
+Comment[ru]=Открыть помощь HomePlay Lite OS
+Exec=homeplay-help
+Icon=help-browser
+Terminal=false
+Categories=Utility;

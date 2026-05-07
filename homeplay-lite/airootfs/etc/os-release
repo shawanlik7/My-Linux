@@ -1,0 +1,10 @@
+NAME="HomePlay Lite OS"
+PRETTY_NAME="HomePlay Lite OS"
+ID=homeplay-lite
+ID_LIKE=arch
+BUILD_ID=rolling
+ANSI_COLOR="1;34"
+HOME_URL="https://github.com/shawanlik7/My-Linux"
+DOCUMENTATION_URL="https://github.com/shawanlik7/My-Linux"
+SUPPORT_URL="https://github.com/shawanlik7/My-Linux/issues"
+BUG_REPORT_URL="https://github.com/shawanlik7/My-Linux/issues"

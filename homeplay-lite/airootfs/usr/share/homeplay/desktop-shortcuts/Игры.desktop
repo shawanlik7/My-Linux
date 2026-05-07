@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Игры
+Comment=Старые игры Windows
+Exec=homeplay-old-games-hub
+Icon=applications-games
+Terminal=false
+Categories=Game;

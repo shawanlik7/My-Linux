@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=HomePlay First Run
+Name[ru]=Первый запуск HomePlay
+Comment=Prepare simple desktop shortcuts
+Comment[ru]=Подготовить рабочий стол и ярлыки
+Exec=homeplay-first-run
+Terminal=false
+OnlyShowIn=XFCE;
+X-GNOME-Autostart-enabled=true

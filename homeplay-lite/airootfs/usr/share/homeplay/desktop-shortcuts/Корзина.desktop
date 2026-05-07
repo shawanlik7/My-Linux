@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Корзина
+Comment=Открыть корзину
+Exec=homeplay-open-folder trash
+Icon=user-trash
+Terminal=false
+Categories=Utility;

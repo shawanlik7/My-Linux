@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<channel name="xfwm4" version="1.0">
+  <property name="general" type="empty">
+    <property name="use_compositing" type="bool" value="false"/>
+    <property name="focus_mode" type="string" value="click"/>
+    <property name="button_layout" type="string" value="O|HMC"/>
+    <property name="theme" type="string" value="Default"/>
+    <property name="workspace_count" type="int" value="1"/>
+    <property name="wrap_windows" type="bool" value="false"/>
+    <property name="zoom_desktop" type="bool" value="false"/>
+  </property>
+</channel>

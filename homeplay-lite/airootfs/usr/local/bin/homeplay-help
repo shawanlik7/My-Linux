@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+help_file="/usr/share/homeplay/help/index.html"
+
+if [ -f "$help_file" ]; then
+  exec xdg-open "$help_file"
+fi
+
+if command -v zenity >/dev/null 2>&1 && [ -n "${DISPLAY:-}" ]; then
+  zenity --info --title="Помощь" --text="Файл помощи не найден."
+else
+  printf 'Файл помощи не найден: %s\n' "$help_file" >&2
+fi

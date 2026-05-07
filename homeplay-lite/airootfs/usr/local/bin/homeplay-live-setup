@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -u
+
+log() {
+  printf '[homeplay-live-setup] %s\n' "$*"
+}
+
+install -d -m 0755 /var/lib/homeplay
+
+if command -v locale-gen >/dev/null 2>&1 && ! locale -a 2>/dev/null | grep -qi '^ru_RU\.utf8$'; then
+  log "Generating ru_RU.UTF-8 locale"
+  locale-gen || true
+fi
+
+groupadd -f autologin
+
+for group in wheel audio video optical storage power network lp scanner autologin; do
+  getent group "$group" >/dev/null 2>&1 || groupadd "$group"
+done
+
+if ! id -u homeplay >/dev/null 2>&1; then
+  log "Creating live user homeplay"
+  useradd -m -U -c "HomePlay User" -s /bin/bash homeplay
+fi
+
+usermod -aG wheel,audio,video,optical,storage,power,network,lp,scanner,autologin homeplay || true
+passwd -d homeplay >/dev/null 2>&1 || true
+
+if [ -d /etc/skel ] && [ -d /home/homeplay ]; then
+  rsync -a --ignore-existing /etc/skel/ /home/homeplay/ || true
+  chown -R homeplay:homeplay /home/homeplay
+fi
+
+if command -v ufw >/dev/null 2>&1; then
+  log "Enabling simple firewall defaults"
+  ufw --force default deny incoming >/dev/null 2>&1 || true
+  ufw --force default allow outgoing >/dev/null 2>&1 || true
+  ufw --force enable >/dev/null 2>&1 || true
+fi
+
+touch /var/lib/homeplay/live-setup.done
+exit 0

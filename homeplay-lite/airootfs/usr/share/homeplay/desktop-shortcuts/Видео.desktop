@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Видео
+Comment=Открыть видео
+Exec=homeplay-open-folder videos
+Icon=folder-videos
+Terminal=false
+Categories=Utility;

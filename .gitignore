@@ -1,0 +1,7 @@
+work/
+out/
+*.iso
+*.img
+*.pkg.tar*
+*.log
+.cache/

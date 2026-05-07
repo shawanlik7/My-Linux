@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Музыка
+Comment=Открыть музыку
+Exec=homeplay-open-folder music
+Icon=folder-music
+Terminal=false
+Categories=Utility;

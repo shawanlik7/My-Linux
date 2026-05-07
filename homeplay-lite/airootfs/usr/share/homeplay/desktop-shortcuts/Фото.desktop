@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Фото
+Comment=Открыть фотографии
+Exec=homeplay-open-folder pictures
+Icon=folder-pictures
+Terminal=false
+Categories=Utility;

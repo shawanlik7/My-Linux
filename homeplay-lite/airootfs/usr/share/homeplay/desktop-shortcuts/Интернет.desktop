@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Интернет
+Comment=Открыть браузер
+Exec=firefox
+Icon=firefox
+Terminal=false
+Categories=Network;WebBrowser;

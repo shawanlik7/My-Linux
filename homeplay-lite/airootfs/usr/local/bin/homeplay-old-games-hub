@@ -1,0 +1,217 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+title="Old Games Hub"
+games_dir="${HOME}/Игры/Old Games"
+prefix_dir="${HOME}/.local/share/homeplay-games/default"
+launcher_dir="${HOME}/.local/share/applications"
+desktop_dir="$(xdg-user-dir DESKTOP 2>/dev/null || printf '%s/Desktop\n' "$HOME")"
+
+mkdir -p "$games_dir" "$prefix_dir" "$launcher_dir" "$desktop_dir"
+
+dialog() {
+  zenity "$@" --title="$title"
+}
+
+need_gui() {
+  if ! command -v zenity >/dev/null 2>&1 || [ -z "${DISPLAY:-}" ]; then
+    printf '%s requires a graphical session.\n' "$title" >&2
+    exit 1
+  fi
+}
+
+wine_command() {
+  if command -v gamemoderun >/dev/null 2>&1; then
+    printf 'gamemoderun wine'
+  else
+    printf 'wine'
+  fi
+}
+
+run_with_wine() {
+  if command -v gamemoderun >/dev/null 2>&1; then
+    gamemoderun wine "$@"
+  else
+    wine "$@"
+  fi
+}
+
+safe_id() {
+  printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '-'
+}
+
+ensure_wine_ready() {
+  if ! command -v wine >/dev/null 2>&1; then
+    dialog --error --text="Игровая поддержка Wine не установлена."
+    exit 1
+  fi
+
+  if [ ! -d "${prefix_dir}/drive_c" ]; then
+    (
+      export WINEPREFIX="$prefix_dir"
+      export WINEARCH=win32
+      wineboot -u >/dev/null 2>&1 || true
+    )
+  fi
+}
+
+create_launcher() {
+  local game_name="$1"
+  local exe_path="$2"
+  local game_id
+  local launcher
+  local run_cmd
+
+  game_id="$(safe_id "$game_name")"
+  launcher="${launcher_dir}/homeplay-${game_id}.desktop"
+  run_cmd="$(wine_command)"
+
+  cat >"$launcher" <<EOF
+[Desktop Entry]
+Type=Application
+Name=${game_name}
+Comment=Запустить старую игру
+Exec=env WINEPREFIX=${prefix_dir} ${run_cmd} "${exe_path}"
+Icon=applications-games
+Terminal=false
+Categories=Game;
+EOF
+
+  chmod +x "$launcher"
+  cp -f "$launcher" "${desktop_dir}/${game_name}.desktop"
+  chmod +x "${desktop_dir}/${game_name}.desktop"
+}
+
+add_game() {
+  local game_name="$1"
+  local mode
+  local exe_path
+
+  ensure_wine_ready
+
+  mode="$(dialog --list \
+    --width=520 \
+    --height=220 \
+    --column="Что выбрать?" \
+    "Игра уже установлена" \
+    "Это установщик" || true)"
+
+  if [ -z "$mode" ]; then
+    return 0
+  fi
+
+  if [ "$mode" = "Это установщик" ]; then
+    dialog --info \
+      --width=500 \
+      --text="Сейчас выберите установщик игры.\n\nПосле установки HomePlay попросит выбрать главный файл запуска игры."
+
+    exe_path="$(dialog --file-selection --title="Выберите установщик" || true)"
+    if [ -z "$exe_path" ]; then
+      return 0
+    fi
+
+    (
+      export WINEPREFIX="$prefix_dir"
+      export WINEARCH=win32
+      run_with_wine "$exe_path"
+    )
+
+    dialog --info \
+      --width=520 \
+      --text="Если установка завершилась, выберите главный файл запуска игры.\n\nОбычно он находится внутри папки игры и заканчивается на .exe."
+  else
+    dialog --info \
+      --width=520 \
+      --text="Выберите главный файл запуска игры.\n\nЕсли файл находится на флешке, игра будет запускаться только пока флешка подключена."
+  fi
+
+  exe_path="$(dialog --file-selection --title="Выберите файл игры" || true)"
+  if [ -z "$exe_path" ]; then
+    return 0
+  fi
+
+  create_launcher "$game_name" "$exe_path"
+
+  dialog --info \
+    --width=420 \
+    --text="Готово.\n\nНа рабочем столе создан ярлык «${game_name}»."
+}
+
+repair_games() {
+  ensure_wine_ready
+
+  dialog --question \
+    --width=500 \
+    --text="Будет выполнено восстановление игровых компонентов для старых игр.\n\nНужен интернет. Это может занять несколько минут." || return 0
+
+  (
+    export WINEPREFIX="$prefix_dir"
+    export WINEARCH=win32
+    printf '# Остановка зависших игр...\n'
+    wineserver -k >/dev/null 2>&1 || true
+    printf '# Подготовка игрового окружения...\n'
+    wineboot -u >/dev/null 2>&1 || true
+    printf '# Установка компонентов для старых игр...\n'
+    winetricks -q corefonts vcrun2005 vcrun2008 d3dx9 >/dev/null 2>&1 || true
+    printf '# Готово\n'
+  ) | zenity --progress \
+    --title="$title" \
+    --width=460 \
+    --pulsate \
+    --auto-close \
+    --no-cancel
+
+  dialog --info --width=420 --text="Восстановление завершено. Попробуйте запустить игру снова."
+}
+
+open_wine_settings() {
+  ensure_wine_ready
+  (
+    export WINEPREFIX="$prefix_dir"
+    winecfg
+  ) >/dev/null 2>&1 &
+}
+
+main_menu() {
+  dialog --list \
+    --width=520 \
+    --height=360 \
+    --column="Действие" \
+    "Играть / открыть Lutris" \
+    "Добавить NFS Most Wanted 2005" \
+    "Добавить S.T.A.L.K.E.R." \
+    "Открыть папку игр" \
+    "Настройки игр" \
+    "Починить запуск игры" \
+    "Выход"
+}
+
+need_gui
+
+while true; do
+  choice="$(main_menu || true)"
+  case "$choice" in
+    "Играть / открыть Lutris")
+      lutris >/dev/null 2>&1 &
+      exit 0
+      ;;
+    "Добавить NFS Most Wanted 2005")
+      add_game "NFS Most Wanted 2005"
+      ;;
+    "Добавить S.T.A.L.K.E.R.")
+      add_game "S.T.A.L.K.E.R."
+      ;;
+    "Открыть папку игр")
+      xdg-open "$games_dir"
+      ;;
+    "Настройки игр")
+      open_wine_settings
+      ;;
+    "Починить запуск игры")
+      repair_games
+      ;;
+    "Выход"|"")
+      exit 0
+      ;;
+  esac
+done

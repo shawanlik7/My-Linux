@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Update System
+Name[ru]=Обновить систему
+Comment=Simple HomePlay Lite OS updater
+Comment[ru]=Простое обновление HomePlay Lite OS
+Exec=homeplay-update
+Icon=system-software-update
+Terminal=false
+Categories=System;

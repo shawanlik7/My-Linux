@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Документы
+Comment=Открыть документы
+Exec=homeplay-open-folder documents
+Icon=folder-documents
+Terminal=false
+Categories=Utility;

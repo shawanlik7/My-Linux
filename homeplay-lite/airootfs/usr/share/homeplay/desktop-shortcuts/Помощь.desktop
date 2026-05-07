@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Помощь
+Comment=Открыть простую помощь
+Exec=homeplay-help
+Icon=help-browser
+Terminal=false
+Categories=Utility;

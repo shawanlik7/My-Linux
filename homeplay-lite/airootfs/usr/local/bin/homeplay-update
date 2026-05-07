@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+title="Обновить систему"
+
+if ! command -v zenity >/dev/null 2>&1 || [ -z "${DISPLAY:-}" ]; then
+  printf 'Запустите обновление в графическом сеансе HomePlay Lite OS.\n' >&2
+  exit 1
+fi
+
+zenity --question \
+  --title="$title" \
+  --width=460 \
+  --text="Система скачает и установит обновления.\n\nПеред обновлением будет попытка создать точку восстановления, если Timeshift уже настроен.\n\nНе выключайте ноутбук во время обновления." || exit 0
+
+log_file="$(mktemp --tmpdir homeplay-update.XXXXXX.log)"
+trap 'rm -f "$log_file"' EXIT
+
+run_update() {
+  {
+    printf '=== HomePlay Lite OS update ===\n'
+    date
+    printf '\n'
+
+    if command -v timeshift >/dev/null 2>&1; then
+      printf 'Создание точки восстановления Timeshift...\n'
+      if pkexec timeshift --create --comments "HomePlay before pacman update" --tags O; then
+        printf 'Точка восстановления создана.\n'
+      else
+        printf 'Timeshift не создал точку восстановления. Возможно, он еще не настроен.\n'
+      fi
+      printf '\n'
+    else
+      printf 'Timeshift не установлен, пропускаю точку восстановления.\n\n'
+    fi
+
+    printf 'Запуск pacman -Syu...\n'
+    pkexec pacman -Syu --noconfirm
+  } >>"$log_file" 2>&1
+}
+
+(
+  printf '# Подготовка обновления...\n'
+  run_update
+  printf '# Готово\n'
+) | zenity --progress \
+  --title="$title" \
+  --width=460 \
+  --pulsate \
+  --auto-close \
+  --no-cancel
+
+status=${PIPESTATUS[0]}
+
+zenity --text-info \
+  --title="Лог обновления" \
+  --width=760 \
+  --height=520 \
+  --filename="$log_file" || true
+
+if [ "$status" -eq 0 ]; then
+  zenity --info --title="$title" --text="Обновление завершено."
+else
+  zenity --error --title="$title" --text="Обновление завершилось с ошибкой. Откройте лог и покажите его тому, кто помогает с компьютером."
+fi
+
+exit "$status"

@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+kind="${1:-home}"
+
+xdg_dir() {
+  xdg-user-dir "$1" 2>/dev/null || printf '%s/%s\n' "$HOME" "$2"
+}
+
+case "$kind" in
+  documents)
+    target="$(xdg_dir DOCUMENTS Documents)"
+    ;;
+  videos)
+    target="$(xdg_dir VIDEOS Videos)"
+    ;;
+  music)
+    target="$(xdg_dir MUSIC Music)"
+    ;;
+  pictures)
+    target="$(xdg_dir PICTURES Pictures)"
+    ;;
+  games)
+    target="${HOME}/Игры"
+    ;;
+  trash)
+    if command -v gio >/dev/null 2>&1; then
+      exec gio open trash:///
+    fi
+    exec thunar trash:///
+    ;;
+  help)
+    exec homeplay-help
+    ;;
+  *)
+    target="$HOME"
+    ;;
+esac
+
+mkdir -p "$target"
+exec xdg-open "$target"

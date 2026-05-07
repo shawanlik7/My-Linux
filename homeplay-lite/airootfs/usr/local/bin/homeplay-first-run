@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+marker="${HOME}/.config/homeplay/first-run.done"
+if [ -e "$marker" ]; then
+  exit 0
+fi
+
+mkdir -p "${HOME}/.config/homeplay"
+
+if command -v xdg-user-dirs-update >/dev/null 2>&1; then
+  xdg-user-dirs-update || true
+fi
+
+desktop_dir="$(xdg-user-dir DESKTOP 2>/dev/null || printf '%s/Desktop\n' "$HOME")"
+documents_dir="$(xdg-user-dir DOCUMENTS 2>/dev/null || printf '%s/Documents\n' "$HOME")"
+videos_dir="$(xdg-user-dir VIDEOS 2>/dev/null || printf '%s/Videos\n' "$HOME")"
+music_dir="$(xdg-user-dir MUSIC 2>/dev/null || printf '%s/Music\n' "$HOME")"
+pictures_dir="$(xdg-user-dir PICTURES 2>/dev/null || printf '%s/Pictures\n' "$HOME")"
+
+mkdir -p "$desktop_dir" "$documents_dir" "$videos_dir" "$music_dir" "$pictures_dir" "${HOME}/Игры/Old Games"
+
+if [ -d /usr/share/homeplay/desktop-shortcuts ]; then
+  cp -f /usr/share/homeplay/desktop-shortcuts/*.desktop "$desktop_dir"/
+  chmod +x "$desktop_dir"/*.desktop 2>/dev/null || true
+  if command -v gio >/dev/null 2>&1; then
+    for launcher in "$desktop_dir"/*.desktop; do
+      gio set "$launcher" metadata::trusted true >/dev/null 2>&1 || true
+    done
+  fi
+fi
+
+homeplay-xfce-setup --quiet || true
+
+touch "$marker"
+
+if command -v zenity >/dev/null 2>&1 && [ -n "${DISPLAY:-}" ]; then
+  zenity --info \
+    --title="HomePlay Lite OS" \
+    --width=430 \
+    --text="Система готова.\n\nОсновные кнопки находятся на рабочем столе.\nДля старых игр откройте ярлык «Игры»."
+fi

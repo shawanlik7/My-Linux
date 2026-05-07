@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Old Games Hub
+Name[ru]=Игры
+Comment=Add and run old Windows games
+Comment[ru]=Добавить и запускать старые игры
+Exec=homeplay-old-games-hub
+Icon=applications-games
+Terminal=false
+Categories=Game;
